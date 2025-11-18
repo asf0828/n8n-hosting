@@ -1,0 +1,265 @@
+{
+  "name": "YNAB-API-TOOLS",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# YNAB API Agent\n\nThis workflow exposes function-style actions for the main bot:\n\n- create_transaction\n- get_accounts\n- get_categories\n- get_transactions\n- get_account_balance\n\nAUTH: Uses OAuth2 credential named `YNAB_Automation_bot`.\nBUDGET: Uses environment variable `YNAB_BUDGET_ID`.\n\nChange credentials and budget via environment variables / n8n credentials UI. All HTTP calls use `https://api.ynab.com/v1`.\n",
+        "height": 576
+      },
+      "id": "be9c0567-db88-419b-b627-71ff9e176ed8",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        -32
+      ],
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n    \"update_id\": 181782288,\n    \"message\": {\n        \"message_id\": 28,\n        \"from\": {\n            \"id\": 1835468157,\n            \"is_bot\": false,\n            \"first_name\": \"Alex\",\n            \"language_code\": \"en\"\n        },\n        \"chat\": {\n            \"id\": 1835468157,\n            \"first_name\": \"Alex\",\n            \"type\": \"private\"\n        },\n        \"date\": 1763495739,\n        \"text\": \"Dime cuales son las categorias en mi budget 2\"\n    }\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        144
+      ],
+      "id": "2f4ba33b-611d-43c7-b6fe-5fca7cbcb1bb",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text}}",
+        "options": {
+          "systemMessage": "# ROLE\nYou are an AI agent that controls a single tool called \"Call 'YNAB-API'\".\nYou MUST ALWAYS call this tool. You MUST NEVER reply with text directly.\n\n# HARD RULES\n- You MUST NEVER invent data.\n- You MUST NEVER fabricate example accounts, categories, balances, or transactions.\n- If the tool returns `success: false`, or empty result, you MUST stop and call the tool only once more with:\n  {\n    \"request\": \"error\",\n    \"rawPayload\": { \"reason\": \"tool_failed_or_empty_response\" }\n  }\n- You MUST NOT retry the same request.\n- You MUST NOT output messages that are not tool calls.\n- You MUST NOT output JSON unless it is inside a tool call.\n\n# ALLOWED REQUEST TYPES\n- \"create_transaction\"\n- \"get_accounts\"\n- \"get_categories\"\n- \"get_transactions\"\n- \"get_account_balance\"\n- \"error\"\n\n# TOOL CALL FORMAT\n{\n  \"request\": \"<one of the allowed types>\",\n  \"rawPayload\": <object or null>\n}\n\n# TOOL FAILURE HANDLING\nIf ANY tool response includes:\n- success: false\n- empty: true\n- missing fields\n- an error message\n\nYou MUST output exactly:\n{\n  \"request\": \"error\",\n  \"rawPayload\": { \"reason\": \"tool_failed\" }\n}\n\n# INPUT FORMAT\nThe parent workflow will pass:\n- request\n- rawPayload (which may be null)\n\n# EXAMPLES\nUser: \"Muéstrame mis categorías\"\n→ MUST CALL:\n{\n  \"request\": \"get_categories\",\n  \"rawPayload\": null\n}\n\nUser: \"Registré un pago de $25.000 en el Éxito\"\n→ MUST CALL:\n{\n  \"request\": \"create_transaction\",\n  \"rawPayload\": {\n    \"merchant\": \"Éxito\",\n    \"amount\": 25000\n  }\n}\n\n# FINAL INSTRUCTION\nYou MUST ALWAYS call the tool \"Call 'YNAB-API'\".\n",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        16,
+        144
+      ],
+      "id": "7dfe5792-b07a-4215-a988-b0375c449729",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "openrouter/sherlock-dash-alpha",
+        "options": {
+          "timeout": 5000,
+          "maxRetries": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        352
+      ],
+      "id": "02191ece-3201-46d5-8625-9f545cb99585",
+      "name": "LLM Function-Caller",
+      "credentials": {
+        "openRouterApi": {
+          "id": "ZbUjKTKdNVqTClQ6",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.update_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        352
+      ],
+      "id": "3b45f6c2-ac71-4b64-9aa8-ed8f30fe2385",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "={{$json.id}}",
+          "mode": "id"
+        },
+        "outputs": {
+          "values": [
+            {
+              "outputName": "payload",
+              "outputValue": "={{$json.result}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        432,
+        0
+      ],
+      "id": "473c8d6e-8051-4f8d-961b-eb66c7a137f4",
+      "name": "Response back"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "={{$json.id}}",
+          "mode": "id"
+        },
+        "outputs": {
+          "values": [
+            {
+              "outputName": "error",
+              "outputValue": "Hubo un error al procesar la solicitud."
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        432,
+        160
+      ],
+      "id": "ceb5547f-e7fd-4566-ba00-a58261aa2f9d",
+      "name": "Response back (with error)"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "OBsONFGvaM7swFoH",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/OBsONFGvaM7swFoH",
+          "cachedResultName": "YNAB-API"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "request": "={{ $fromAI('request') }}",
+            "rawPayload": "={{ $fromAI('rawPayload') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "request",
+              "displayName": "request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "rawPayload",
+              "displayName": "rawPayload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        368
+      ],
+      "id": "efbc114d-430f-4775-a242-765ae8870995",
+      "name": "Call 'YNAB-API'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Function-Caller": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response back",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response back (with error)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'YNAB-API'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4e331565-1a97-4af6-bcef-a49949d21fc8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "034c0cf13df720043486907f85a898e45a2fee6a4a7bbbfdab5ea439e9c066c1"
+  },
+  "id": "3Pk1bK9eBUqczu9M",
+  "tags": []
+}

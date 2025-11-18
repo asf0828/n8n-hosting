@@ -1,0 +1,504 @@
+{
+  "name": "YNAB_Automation_bot",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# YNAB Automation Bot (Main)\n\nThis workflow accepts Telegram input (voice, text, image+text) and routes to the YNAB API Agent.\n\nENV variables required:\n- USE_OPENAI=true|false\n- OPENAI_API_KEY\n- OPENROUTER_API_KEY\n- YNAB_BUDGET_ID\n\nCredential required in n8n:\n- OAuth2 credential named `YNAB_Automation_bot` (for the YNAB API calls in the API agent)\n\nHow it works:\n1. Telegram Trigger receives message\n2. Switch: voice / text / photo+caption\n3. Voice -> download -> transcribe with OpenAI\n4. Photo -> download -> OCR (OpenAI Vision) -> combine caption\n5. Prepare unified payload and call subworkflow `ynab_api_agent` (via Workflow node)\n6. Send result back to Telegram\n"
+      },
+      "id": "7d11fa15-227e-46e6-9162-c6288c7460ad",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -16
+      ],
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "a3536839-d774-4da4-8964-f7c6faf576ab",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -208,
+        240
+      ],
+      "webhookId": "webhook-telegram-ynab",
+      "credentials": {
+        "telegramApi": {
+          "id": "UthmehRb2RYD3B0G",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "07d7ec5c-ff0a-4eab-9962-0eded18be787",
+      "name": "Download Voice File",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        32
+      ],
+      "webhookId": "download-voice-webhook",
+      "credentials": {
+        "telegramApi": {
+          "id": "UthmehRb2RYD3B0G",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "43100648-8cd7-42b0-ae6e-31f005f33124",
+      "name": "Transcribe Audio (OpenAI)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [
+        416,
+        32
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "g0cXIn73icUtjb4R",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.photo[$json.message.photo.length-1].file_id }}",
+        "additionalFields": {}
+      },
+      "id": "03cd480e-9d0a-4477-98fa-9d092309088a",
+      "name": "Download Photo File",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        240
+      ],
+      "webhookId": "download-photo-webhook",
+      "credentials": {
+        "telegramApi": {
+          "id": "UthmehRb2RYD3B0G",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "id": "5a314331-e80a-490f-bb18-be7c161a5e54",
+      "name": "OpenAI Vision OCR",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [
+        416,
+        240
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "g0cXIn73icUtjb4R",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "text",
+              "stringValue": "={{ $json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bd93b24d-ceb9-4cf0-b758-115660309709",
+      "name": "Set Payload - Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        400,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "text",
+              "stringValue": "={{ $json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "582eaef0-23f8-4615-9de2-0a17cd4ba1a0",
+      "name": "Set Payload - Voice",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        576,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "text",
+              "stringValue": "={{$json.message.text}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f465fad5-b426-41fa-9659-56d0b1dc1de1",
+      "name": "Set Payload - Photo",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        576,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "d2500bff-e5ef-4b40-b303-5a44d8b3f8d4",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        240
+      ],
+      "webhookId": "e0cf3bdc-9619-42dc-9d91-8f7ff3a04baf",
+      "credentials": {
+        "telegramApi": {
+          "id": "UthmehRb2RYD3B0G",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "3Pk1bK9eBUqczu9M",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/3Pk1bK9eBUqczu9M",
+          "cachedResultName": "YNAB-API-TOOLS"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "update_id": "={{ $json.update_id }}",
+            "message": "={{ $json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "update_id",
+              "displayName": "update_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        240
+      ],
+      "id": "31594c2b-95ce-4c13-b2a2-cc2c44f2ad09",
+      "name": "Call 'ynab_api_agent'"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "60543b45-1284-4ec0-a44a-9373a2af31a5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "70a78dd0-e12a-4658-b538-3b646f668e96",
+                    "leftValue": "={{ $json.message.photo }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image+Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fe2f83d6-3195-49f0-ab88-8451de7e67bf",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        32,
+        224
+      ],
+      "id": "c066bbad-71b5-40ea-8525-310321b599cf",
+      "name": "Switch1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Voice File": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Audio (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Audio (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Set Payload - Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Photo File": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Vision OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Vision OCR": {
+      "main": [
+        [
+          {
+            "node": "Set Payload - Photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Payload - Photo": {
+      "main": [
+        [
+          {
+            "node": "Call 'ynab_api_agent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Payload - Text": {
+      "main": [
+        [
+          {
+            "node": "Call 'ynab_api_agent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Payload - Voice": {
+      "main": [
+        [
+          {
+            "node": "Call 'ynab_api_agent'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'ynab_api_agent'": {
+      "main": [
+        [
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Download Voice File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Photo File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Payload - Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Response": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b0db9824-3708-4d99-9a87-6ba99650f0c4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "034c0cf13df720043486907f85a898e45a2fee6a4a7bbbfdab5ea439e9c066c1"
+  },
+  "id": "QTCBfevOAkfSq6MZ",
+  "tags": []
+}

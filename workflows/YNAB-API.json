@@ -1,0 +1,528 @@
+{
+  "name": "YNAB-API",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/accounts/{{$json.account_id}}",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "7e9fa1cc-a089-46fa-8883-4647c1a52fa7",
+      "name": "GET /accounts/{id}",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        864
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ChALUg665mUUhsxH",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return [ { json: { success: true, account: $items(\"GET /accounts/{id}\")[0].json } } ];"
+      },
+      "id": "34712116-5182-4a97-9626-8ea1648c0703",
+      "name": "Return account balance",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/transactions",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "2c1b489b-7a2e-4edf-972d-e65ddb825c41",
+      "name": "GET /transactions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        704
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ChALUg665mUUhsxH",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return [ { json: { success: true, transactions: $items(\"GET /transactions\")[0].json } } ];"
+      },
+      "id": "d33dcd6d-d3a5-4acd-8e4b-38beb708c82d",
+      "name": "Return transactions result",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/categories",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "59ff5321-8025-4da8-abf7-e559c0276765",
+      "name": "GET /categories",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        544
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ChALUg665mUUhsxH",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return [ { json: { success: true, categories: $items(\"GET /categories\")[0].json } } ];"
+      },
+      "id": "f632faba-1acf-44f0-8591-667f5d8a3ba1",
+      "name": "Return categories result",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/accounts",
+        "jsonParameters": true,
+        "options": {},
+        "headerParametersJson": "=",
+        "queryParametersJson": "="
+      },
+      "id": "50ddf771-2ea9-4892-9447-75ea35d12c11",
+      "name": "GET /accounts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        368
+      ],
+      "executeOnce": true,
+      "notesInFlow": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ChALUg665mUUhsxH",
+          "name": "Bearer Auth account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "functionCode": "return [ { json: { success: true, accounts: $items(\"GET /accounts\")[0].json } } ];"
+      },
+      "id": "cc8a03fa-bd62-47b5-b7a4-1083d0e3502e",
+      "name": "Return accounts result",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "98bfb626-51c8-4f3a-bc44-d2830f8ad728",
+      "name": "Build create_transaction payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        1136,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/transactions",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{ $json.body }}"
+      },
+      "id": "d8d3b70a-8343-4687-bcbc-02e080cb2b6f",
+      "name": "POST /transactions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [ { json: { success: true, result: $items(\"POST /transactions\")[0].json } } ];"
+      },
+      "id": "b6423dbd-5827-4a6e-885a-14fcbfd3f94f",
+      "name": "Return create result",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"request\": \"get_categories\",\n  \"rawPayload\": null\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        544
+      ],
+      "id": "a2b7b83b-57cd-473a-b147-ed02e725273c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.request }}",
+                    "rightValue": "create_transaction",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "dd819951-7ec5-4c44-abbb-d858024eceee"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create_transaction"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b70725c3-a648-4a36-992b-201c22b011ca",
+                    "leftValue": "={{ $json.request }}",
+                    "rightValue": "get_accounts",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get_accounts"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2a470db8-6b82-4a5b-8c99-2d45dc7d5e40",
+                    "leftValue": "={{ $json.request }}",
+                    "rightValue": "get_categories",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get_categories"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "16aa8d79-59df-40b6-ad60-6d17583d898d",
+                    "leftValue": "={{ $json.request }}",
+                    "rightValue": "get_transactions",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get_transactions"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d7660bb8-c45f-45e5-8a26-de7a8d557725",
+                    "leftValue": "={{ $json.request }}",
+                    "rightValue": "get_account_balance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get_account_balance"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f2a45b05-dc1d-46dc-80cc-cb642e6448f4",
+                    "leftValue": "={{ $json.request }}",
+                    "rightValue": "error",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "error"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        768,
+        496
+      ],
+      "id": "357eae1a-1b0d-42cf-ad80-bfa21bd4e831",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ success: false, empty: true }];"
+      },
+      "id": "ec5e9a9a-2d58-477e-85c4-3d6382cce5ef",
+      "name": "Return error",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2384,
+        656
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Build create_transaction payload": {
+      "main": [
+        [
+          {
+            "node": "POST /transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /transactions": {
+      "main": [
+        [
+          {
+            "node": "Return create result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /accounts": {
+      "main": [
+        [
+          {
+            "node": "Return accounts result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "GET /categories": {
+      "main": [
+        [
+          {
+            "node": "Return categories result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /transactions": {
+      "main": [
+        [
+          {
+            "node": "Return transactions result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /accounts/{id}": {
+      "main": [
+        [
+          {
+            "node": "Return account balance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Build create_transaction payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET /accounts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET /categories",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET /transactions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET /accounts/{id}",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fc773ba2-f25f-495b-b24a-e836ef4b0f6e",
+  "meta": {
+    "instanceId": "034c0cf13df720043486907f85a898e45a2fee6a4a7bbbfdab5ea439e9c066c1"
+  },
+  "id": "OBsONFGvaM7swFoH",
+  "tags": []
+}
