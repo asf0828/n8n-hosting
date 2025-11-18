@@ -30,6 +30,8 @@ services:
   n8n:
     image: docker.n8n.io/n8nio/n8n
     restart: always
+    # Use custom entrypoint to start with tunnel (ONLY FOR DEVELOPMENT)
+    entrypoint: /docker-entrypoint-conditional.sh
     environment:
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=postgres
@@ -43,6 +45,7 @@ services:
       - postgres
     volumes:
       - n8n_storage:/home/node/.n8n
+      - ./n8n-entrypoint.sh:/docker-entrypoint-conditional.sh:ro
     depends_on:
       postgres:
         condition: service_healthy
