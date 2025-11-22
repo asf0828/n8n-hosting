@@ -1,16 +1,16 @@
 {
-  "name": "YNAB_Automation_bot",
+  "name": "test-YNAB_Automation_bot",
   "nodes": [
     {
       "parameters": {
-        "content": "# YNAB Automation Bot (Main)\n\nThis workflow accepts Telegram input (voice, text, image+text) and routes to the YNAB API Agent.\n\nENV variables required:\n- USE_OPENAI=true|false\n- OPENAI_API_KEY\n- OPENROUTER_API_KEY\n- YNAB_BUDGET_ID\n\nCredential required in n8n:\n- OAuth2 credential named `YNAB_Automation_bot` (for the YNAB API calls in the API agent)\n\nHow it works:\n1. Telegram Trigger receives message\n2. Switch: voice / text / photo+caption\n3. Voice -> download -> transcribe with OpenAI\n4. Photo -> download -> OCR (OpenAI Vision) -> combine caption\n5. Prepare unified payload and call subworkflow `ynab_api_agent` (via Workflow node)\n6. Send result back to Telegram\n"
+        "content": "# YNAB Automation Bot (Main)\n\nThis workflow accepts Telegram input (voice, text, image+text) and routes to the YNAB API Agent.\n\nENV variables required:\n- USE_OPENAI=true|false\n- OPENAI_API_KEY\n- OPENROUTER_API_KEY\n- YNAB_BUDGET_ID\n\nCredential required in n8n:\n- OAuth2 credential named `YNAB_Automation_bot` (for the YNAB API calls in the API agent)\n\nHow it works:\n1. Telegram Trigger receives message\n2. Switch: voice / text / photo+caption\n3. Voice -> download -> transcribe with OpenAI\n4. Photo -> download -> OCR -> combine caption\n5. Prepare unified payload and call subworkflow `ynab_api_agent` (via Workflow node)\n6. Send result back to Telegram\n"
       },
-      "id": "7d11fa15-227e-46e6-9162-c6288c7460ad",
+      "id": "70596835-6572-4427-adf9-f2b4a6b14c85",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -128,
-        -16
+        0,
+        0
       ],
       "name": "Sticky Note"
     },
@@ -21,13 +21,13 @@
         ],
         "additionalFields": {}
       },
-      "id": "a3536839-d774-4da4-8964-f7c6faf576ab",
+      "id": "789c9d17-b29f-4b6b-8f79-a0eb7c0ad00b",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
       "position": [
-        -208,
-        240
+        -80,
+        256
       ],
       "webhookId": "webhook-telegram-ynab",
       "credentials": {
@@ -43,13 +43,13 @@
         "fileId": "={{ $json.message.voice.file_id }}",
         "additionalFields": {}
       },
-      "id": "07d7ec5c-ff0a-4eab-9962-0eded18be787",
+      "id": "f2208a43-6e71-4ae1-b9dc-b2038433f087",
       "name": "Download Voice File",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        240,
-        32
+        368,
+        48
       ],
       "webhookId": "download-voice-webhook",
       "credentials": {
@@ -65,13 +65,13 @@
         "operation": "transcribe",
         "options": {}
       },
-      "id": "43100648-8cd7-42b0-ae6e-31f005f33124",
+      "id": "51acb583-71a2-4e9e-9c0c-8a313fe1ef2d",
       "name": "Transcribe Audio (OpenAI)",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.6,
       "position": [
-        416,
-        32
+        544,
+        48
       ],
       "credentials": {
         "openAiApi": {
@@ -86,13 +86,13 @@
         "fileId": "={{ $json.message.photo[$json.message.photo.length-1].file_id }}",
         "additionalFields": {}
       },
-      "id": "03cd480e-9d0a-4477-98fa-9d092309088a",
+      "id": "75647433-717c-43b2-b002-9794c5382b41",
       "name": "Download Photo File",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        240,
-        240
+        368,
+        256
       ],
       "webhookId": "download-photo-webhook",
       "credentials": {
@@ -104,49 +104,33 @@
     },
     {
       "parameters": {
-        "resource": "image",
-        "operation": "analyze",
-        "modelId": {
-          "__rl": true,
-          "mode": "list",
-          "value": ""
-        },
-        "options": {}
-      },
-      "id": "5a314331-e80a-490f-bb18-be7c161a5e54",
-      "name": "OpenAI Vision OCR",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.6,
-      "position": [
-        416,
-        240
-      ],
-      "credentials": {
-        "openAiApi": {
-          "id": "g0cXIn73icUtjb4R",
-          "name": "OpenAi account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "fields": {
           "values": [
             {
               "name": "text",
               "stringValue": "={{ $json.message.text }}"
+            },
+            {
+              "name": "update_id",
+              "type": "numberValue",
+              "numberValue": "={{ $json.update_id }}"
+            },
+            {
+              "name": "message",
+              "type": "objectValue",
+              "objectValue": "={{ $json.message }}"
             }
           ]
         },
         "options": {}
       },
-      "id": "bd93b24d-ceb9-4cf0-b758-115660309709",
+      "id": "a6437732-0191-4630-a247-17a4849c6329",
       "name": "Set Payload - Text",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        400,
-        496
+        528,
+        512
       ]
     },
     {
@@ -155,19 +139,29 @@
           "values": [
             {
               "name": "text",
-              "stringValue": "={{ $json.message.text }}"
+              "stringValue": "={{ $json.text }}"
+            },
+            {
+              "name": "update_id",
+              "type": "numberValue",
+              "numberValue": "={{ $('Telegram Trigger').item.json.update_id }}"
+            },
+            {
+              "name": "message",
+              "type": "objectValue",
+              "objectValue": "={{ $('Telegram Trigger').item.json.message }}"
             }
           ]
         },
         "options": {}
       },
-      "id": "582eaef0-23f8-4615-9de2-0a17cd4ba1a0",
+      "id": "33c919a7-f311-4414-93e0-cc6881bf2772",
       "name": "Set Payload - Voice",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        576,
-        32
+        704,
+        48
       ]
     },
     {
@@ -176,19 +170,29 @@
           "values": [
             {
               "name": "text",
-              "stringValue": "={{$json.message.text}}"
+              "stringValue": "={{ $('Telegram Trigger').item.json.message.caption || '' }}: {{$json.parsedText}}"
+            },
+            {
+              "name": "update_id",
+              "type": "numberValue",
+              "numberValue": "={{ $('Telegram Trigger').item.json.update_id }}"
+            },
+            {
+              "name": "message",
+              "type": "objectValue",
+              "objectValue": "={{ $('Telegram Trigger').item.json.message }}"
             }
           ]
         },
         "options": {}
       },
-      "id": "f465fad5-b426-41fa-9659-56d0b1dc1de1",
+      "id": "9a8853fc-e2e4-4e9a-960f-05c3716938bb",
       "name": "Set Payload - Photo",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        576,
-        240
+        848,
+        256
       ]
     },
     {
@@ -197,13 +201,13 @@
         "text": "={{ $json.output }}",
         "additionalFields": {}
       },
-      "id": "d2500bff-e5ef-4b40-b303-5a44d8b3f8d4",
+      "id": "229918bf-2502-4923-826b-c2e1896bf97f",
       "name": "Send Response",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1104,
-        240
+        1344,
+        272
       ],
       "webhookId": "e0cf3bdc-9619-42dc-9d91-8f7ff3a04baf",
       "credentials": {
@@ -212,58 +216,6 @@
           "name": "Telegram account"
         }
       }
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "3Pk1bK9eBUqczu9M",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/3Pk1bK9eBUqczu9M",
-          "cachedResultName": "YNAB-API-TOOLS"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "update_id": "={{ $json.update_id }}",
-            "message": "={{ $json.message }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "update_id",
-              "displayName": "update_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number",
-              "removed": false
-            },
-            {
-              "id": "message",
-              "displayName": "message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "object",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        784,
-        240
-      ],
-      "id": "31594c2b-95ce-4c13-b2a2-cc2c44f2ad09",
-      "name": "Call 'ynab_api_agent'"
     },
     {
       "parameters": {
@@ -351,11 +303,130 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        32,
-        224
+        160,
+        240
       ],
-      "id": "c066bbad-71b5-40ea-8525-310321b599cf",
+      "id": "8c11757c-2e81-4fa6-bfa4-937819ebb764",
       "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ocr.space/parse/image",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "language",
+              "value": "spa"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "K87997918288957"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        528,
+        256
+      ],
+      "id": "18435d66-1ece-4bcd-8d08-f8ce2705d59f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract ParsedText from OCR response\nconst ocr = $json;\n\nlet parsedText = null;\n\ntry {\n  parsedText = ocr?.ParsedResults?.[0]?.ParsedText ?? null;\n} catch (e) {\n  parsedText = null;\n}\n\n// Return data for next node\nreturn [\n  {\n    parsedText,\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        256
+      ],
+      "id": "4b6307a5-18c3-4b60-8ff1-6d752112ae29",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Pr8tBQtDrnB53GW4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Pr8tBQtDrnB53GW4",
+          "cachedResultName": "test-YNAB-API-TOOLS"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "update_id": "={{ $json.update_id }}",
+            "message": "={{ $json.message }}",
+            "text": "={{ $json.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "update_id",
+              "displayName": "update_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        272
+      ],
+      "id": "ed4009fa-d8cc-4d8b-be1c-680f02b507c5",
+      "name": "Call 'test-YNAB-API-TOOLS'"
     }
   ],
   "pinData": {},
@@ -397,18 +468,7 @@
       "main": [
         [
           {
-            "node": "OpenAI Vision OCR",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenAI Vision OCR": {
-      "main": [
-        [
-          {
-            "node": "Set Payload - Photo",
+            "node": "HTTP Request",
             "type": "main",
             "index": 0
           }
@@ -419,7 +479,7 @@
       "main": [
         [
           {
-            "node": "Call 'ynab_api_agent'",
+            "node": "Call 'test-YNAB-API-TOOLS'",
             "type": "main",
             "index": 0
           }
@@ -430,7 +490,7 @@
       "main": [
         [
           {
-            "node": "Call 'ynab_api_agent'",
+            "node": "Call 'test-YNAB-API-TOOLS'",
             "type": "main",
             "index": 0
           }
@@ -441,18 +501,7 @@
       "main": [
         [
           {
-            "node": "Call 'ynab_api_agent'",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'ynab_api_agent'": {
-      "main": [
-        [
-          {
-            "node": "Send Response",
+            "node": "Call 'test-YNAB-API-TOOLS'",
             "type": "main",
             "index": 0
           }
@@ -484,9 +533,37 @@
         ]
       ]
     },
-    "Send Response": {
+    "HTTP Request": {
       "main": [
-        []
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Set Payload - Photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'test-YNAB-API-TOOLS'": {
+      "main": [
+        [
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
@@ -494,11 +571,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b0db9824-3708-4d99-9a87-6ba99650f0c4",
+  "versionId": "6c120f30-67c1-4f43-8ebe-317030fd2d3b",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "034c0cf13df720043486907f85a898e45a2fee6a4a7bbbfdab5ea439e9c066c1"
   },
-  "id": "QTCBfevOAkfSq6MZ",
+  "id": "pLF53wHT4yFfr7QL",
   "tags": []
 }

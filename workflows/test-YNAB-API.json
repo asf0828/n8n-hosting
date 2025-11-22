@@ -1,21 +1,21 @@
 {
-  "name": "YNAB-API",
+  "name": "test-YNAB-API",
   "nodes": [
     {
       "parameters": {
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
-        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/accounts/{{$json.account_id}}",
+        "url": "=https://api.ynab.com/v1/budgets/{{ $env.YNAB_BUDGET_ID}}/accounts/{{$json.account_id}}",
         "jsonParameters": true,
         "options": {}
       },
-      "id": "7e9fa1cc-a089-46fa-8883-4647c1a52fa7",
+      "id": "b3e58dd1-0b2d-448c-8f51-6f8c6eb947de",
       "name": "GET /accounts/{id}",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1136,
-        864
+        -608,
+        688
       ],
       "credentials": {
         "httpBearerAuth": {
@@ -26,32 +26,32 @@
     },
     {
       "parameters": {
-        "functionCode": "return [ { json: { success: true, account: $items(\"GET /accounts/{id}\")[0].json } } ];"
+        "functionCode": "const response = $items(\"GET /accounts/{id}\")[0].json;\nreturn [{ \n  json: { \n    success: true,\n    action: \"get_account_balance\",\n    account: response.data.account,\n    balance: response.data.account.balance,\n    message: \"Account balance retrieved successfully\"\n  } \n}];"
       },
-      "id": "34712116-5182-4a97-9626-8ea1648c0703",
+      "id": "365b48ef-8798-4f5e-9e88-72a3dee18fb9",
       "name": "Return account balance",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        1376,
-        864
+        -368,
+        688
       ]
     },
     {
       "parameters": {
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
-        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/transactions",
+        "url": "=https://api.ynab.com/v1/budgets/{{ $env.YNAB_BUDGET_ID}}/transactions",
         "jsonParameters": true,
         "options": {}
       },
-      "id": "2c1b489b-7a2e-4edf-972d-e65ddb825c41",
+      "id": "b6b7150b-6489-444f-b1cf-58b3eb854330",
       "name": "GET /transactions",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1136,
-        704
+        -608,
+        528
       ],
       "credentials": {
         "httpBearerAuth": {
@@ -62,32 +62,32 @@
     },
     {
       "parameters": {
-        "functionCode": "return [ { json: { success: true, transactions: $items(\"GET /transactions\")[0].json } } ];"
+        "functionCode": "const response = $items(\"GET /transactions\")[0].json;\nreturn [{ \n  json: { \n    success: true,\n    action: \"get_transactions\",\n    transactions: response.data.transactions,\n    count: response.data.transactions.length,\n    message: \"Transactions retrieved successfully\"\n  } \n}];"
       },
-      "id": "d33dcd6d-d3a5-4acd-8e4b-38beb708c82d",
+      "id": "d7afafd7-1b1a-402e-b2d6-7a3a16d5d6d9",
       "name": "Return transactions result",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        1376,
-        704
+        -368,
+        528
       ]
     },
     {
       "parameters": {
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
-        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/categories",
+        "url": "=https://api.ynab.com/v1/budgets/{{ $env.YNAB_BUDGET_ID}}/categories",
         "jsonParameters": true,
         "options": {}
       },
-      "id": "59ff5321-8025-4da8-abf7-e559c0276765",
+      "id": "fb77dc55-e048-43fe-9c0d-45c222427c09",
       "name": "GET /categories",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1136,
-        544
+        -608,
+        368
       ],
       "credentials": {
         "httpBearerAuth": {
@@ -98,34 +98,34 @@
     },
     {
       "parameters": {
-        "functionCode": "return [ { json: { success: true, categories: $items(\"GET /categories\")[0].json } } ];"
+        "functionCode": "const response = $items(\"GET /categories\")[0].json;\nreturn [{ \n  json: { \n    success: true,\n    action: \"get_categories\",\n    categories: response.data.category_groups,\n    count: response.data.category_groups.length,\n    message: \"Categories retrieved successfully\"\n  } \n}];"
       },
-      "id": "f632faba-1acf-44f0-8591-667f5d8a3ba1",
+      "id": "37bba1e6-1940-45ab-9474-d0021620c07f",
       "name": "Return categories result",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        1376,
-        544
+        -368,
+        368
       ]
     },
     {
       "parameters": {
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
-        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/accounts",
+        "url": "=https://api.ynab.com/v1/budgets/{{ $env.YNAB_BUDGET_ID}}/accounts",
         "jsonParameters": true,
         "options": {},
         "headerParametersJson": "=",
         "queryParametersJson": "="
       },
-      "id": "50ddf771-2ea9-4892-9447-75ea35d12c11",
+      "id": "4af8e511-b71d-412f-a63d-bdbc44785201",
       "name": "GET /accounts",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1136,
-        368
+        -608,
+        192
       ],
       "executeOnce": true,
       "notesInFlow": false,
@@ -140,58 +140,76 @@
     },
     {
       "parameters": {
-        "functionCode": "return [ { json: { success: true, accounts: $items(\"GET /accounts\")[0].json } } ];"
+        "functionCode": "const response = $items(\"GET /accounts\")[0].json;\nreturn [{ \n  json: { \n    success: true,\n    action: \"get_accounts\",\n    accounts: response.data.accounts,\n    count: response.data.accounts.length,\n    message: \"Accounts retrieved successfully\"\n  } \n}];"
       },
-      "id": "cc8a03fa-bd62-47b5-b7a4-1083d0e3502e",
+      "id": "ffbeb9ee-e675-49bc-ad16-3716c1f7158e",
       "name": "Return accounts result",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        1376,
-        352
+        -368,
+        192
       ]
     },
     {
       "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "body",
+              "type": "objectValue",
+              "objectValue": "={{  $fromAI('rawPayload') }}"
+            }
+          ]
+        },
         "options": {}
       },
-      "id": "98bfb626-51c8-4f3a-bc44-d2830f8ad728",
+      "id": "7d645a92-cbf0-46a3-ac4d-0d68887cb7d4",
       "name": "Build create_transaction payload",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        1136,
-        192
+        -608,
+        16
       ]
     },
     {
       "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "requestMethod": "POST",
-        "url": "=https://api.ynab.com/v1/budgets/{{$env.YNAB_BUDGET_ID}}/transactions",
+        "url": "=https://api.ynab.com/v1/budgets/{{ $env.YNAB_BUDGET_ID}}/transactions",
         "jsonParameters": true,
         "options": {},
         "bodyParametersJson": "={{ $json.body }}"
       },
-      "id": "d8d3b70a-8343-4687-bcbc-02e080cb2b6f",
+      "id": "8906fb69-8ba8-485a-a0ed-31478ea0e6d8",
       "name": "POST /transactions",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        1376,
-        192
-      ]
+        -368,
+        16
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ChALUg665mUUhsxH",
+          "name": "Bearer Auth account"
+        }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "functionCode": "return [ { json: { success: true, result: $items(\"POST /transactions\")[0].json } } ];"
+        "functionCode": "const response = $items(\"POST /transactions\")[0].json;\nreturn [{ \n  json: { \n    success: true, \n    action: \"create_transaction\",\n    transaction_id: response?.data?.transaction?.id,\n    account_id: response?.data?.transaction?.account_id,\n    amount: response?.data?.transaction?.amount,\n    payee_name: response?.data?.transaction?.payee_name,\n    date: response?.data?.transaction?.date,\n    message: \"Transaction created successfully\"\n  } \n}];"
       },
-      "id": "b6423dbd-5827-4a6e-885a-14fcbfd3f94f",
+      "id": "d2968f39-89ae-440a-9162-6f3eb3130f05",
       "name": "Return create result",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        1632,
-        192
+        0,
+        0
       ]
     },
     {
@@ -202,10 +220,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        592,
-        544
+        -1152,
+        368
       ],
-      "id": "a2b7b83b-57cd-473a-b147-ed02e725273c",
+      "id": "20139036-17fb-414b-8579-3da2a2d518ea",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -346,6 +364,31 @@
                 },
                 "conditions": [
                   {
+                    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "leftValue": "={{ $json.request }}",
+                    "rightValue": "get_payees",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get_payees"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
                     "id": "f2a45b05-dc1d-46dc-80cc-cb642e6448f4",
                     "leftValue": "={{ $json.request }}",
                     "rightValue": "error",
@@ -368,23 +411,59 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        768,
-        496
+        -976,
+        320
       ],
-      "id": "357eae1a-1b0d-42cf-ad80-bfa21bd4e831",
+      "id": "36117a3a-d0cf-467c-adac-7c98188ff15b",
       "name": "Switch"
     },
     {
       "parameters": {
-        "functionCode": "return [{ success: false, empty: true }];"
+        "functionCode": "const errorData = $input.first().json;\n\nlet errorMessage = \"Error occurred\";\n\nif (errorData.error?.detail) {\n  errorMessage = errorData.error.detail;\n} else if (errorData.message) {\n  errorMessage = errorData.message;\n} else if (errorData.error) {\n  errorMessage = JSON.stringify(errorData.error);\n}\n\nreturn [{ \n  json: { \n    success: false, \n    error: true,\n    message: errorMessage,\n    rawError: errorData\n  } \n}];"
       },
-      "id": "ec5e9a9a-2d58-477e-85c4-3d6382cce5ef",
+      "id": "87c7cf60-128b-4804-8be3-fc152eff22b0",
       "name": "Return error",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        2384,
-        656
+        640,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "url": "=https://api.ynab.com/v1/budgets/{{ $env.YNAB_BUDGET_ID}}/payees",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "d5c109cd-6909-476f-b39c-204bf1d48307",
+      "name": "GET /payees",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        848
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "ChALUg665mUUhsxH",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const response = $items(\"GET /payees\")[0].json;\nreturn [{ \n  json: { \n    success: true,\n    action: \"get_payees\",\n    payees: response.data.payees,\n    count: response.data.payees.length,\n    message: \"Payees retrieved successfully\"\n  } \n}];"
+      },
+      "id": "61927fad-ac78-4a4e-ad92-e1c400e9c64c",
+      "name": "Return payees result",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        848
       ]
     }
   ],
@@ -409,6 +488,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Return error",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -420,8 +506,7 @@
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     },
     "GET /categories": {
@@ -451,6 +536,17 @@
         [
           {
             "node": "Return account balance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /payees": {
+      "main": [
+        [
+          {
+            "node": "Return payees result",
             "type": "main",
             "index": 0
           }
@@ -507,6 +603,13 @@
         ],
         [
           {
+            "node": "GET /payees",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Return error",
             "type": "main",
             "index": 0
@@ -519,10 +622,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "fc773ba2-f25f-495b-b24a-e836ef4b0f6e",
+  "versionId": "834d49a2-12d4-4a61-ba13-41c269ce83fb",
   "meta": {
     "instanceId": "034c0cf13df720043486907f85a898e45a2fee6a4a7bbbfdab5ea439e9c066c1"
   },
-  "id": "OBsONFGvaM7swFoH",
+  "id": "lZn1WWLBWwSDxc05",
   "tags": []
 }
