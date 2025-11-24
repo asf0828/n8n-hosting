@@ -5,7 +5,7 @@
       "parameters": {
         "content": "# YNAB Automation Bot (Main)\n\nThis workflow accepts Telegram input (voice, text, image+text) and routes to the YNAB API Agent.\n\nENV variables required:\n- USE_OPENAI=true|false\n- OPENAI_API_KEY\n- OPENROUTER_API_KEY\n- YNAB_BUDGET_ID\n\nCredential required in n8n:\n- OAuth2 credential named `YNAB_Automation_bot` (for the YNAB API calls in the API agent)\n\nHow it works:\n1. Telegram Trigger receives message\n2. Switch: voice / text / photo+caption\n3. Voice -> download -> transcribe with OpenAI\n4. Photo -> download -> OCR -> combine caption\n5. Prepare unified payload and call subworkflow `ynab_api_agent` (via Workflow node)\n6. Send result back to Telegram\n"
       },
-      "id": "70596835-6572-4427-adf9-f2b4a6b14c85",
+      "id": "92f428b3-67a4-4544-bd4a-696d6b5b22a8",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -21,7 +21,7 @@
         ],
         "additionalFields": {}
       },
-      "id": "789c9d17-b29f-4b6b-8f79-a0eb7c0ad00b",
+      "id": "be055230-3310-4c3d-81c8-d00747d8e169",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
@@ -32,7 +32,7 @@
       "webhookId": "webhook-telegram-ynab",
       "credentials": {
         "telegramApi": {
-          "id": "UthmehRb2RYD3B0G",
+          "id": "PSckvakDT1ETlbAn",
           "name": "Telegram account"
         }
       }
@@ -43,7 +43,7 @@
         "fileId": "={{ $json.message.voice.file_id }}",
         "additionalFields": {}
       },
-      "id": "f2208a43-6e71-4ae1-b9dc-b2038433f087",
+      "id": "5e5eb36c-ef49-4cdc-9d3a-a743cc0a1873",
       "name": "Download Voice File",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
@@ -54,7 +54,7 @@
       "webhookId": "download-voice-webhook",
       "credentials": {
         "telegramApi": {
-          "id": "UthmehRb2RYD3B0G",
+          "id": "PSckvakDT1ETlbAn",
           "name": "Telegram account"
         }
       }
@@ -65,7 +65,7 @@
         "operation": "transcribe",
         "options": {}
       },
-      "id": "51acb583-71a2-4e9e-9c0c-8a313fe1ef2d",
+      "id": "5e462e1f-8b18-40b2-ae0f-e6d333db6709",
       "name": "Transcribe Audio (OpenAI)",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.6,
@@ -75,7 +75,7 @@
       ],
       "credentials": {
         "openAiApi": {
-          "id": "g0cXIn73icUtjb4R",
+          "id": "uXH9Au33nZyHPfQa",
           "name": "OpenAi account"
         }
       }
@@ -86,7 +86,7 @@
         "fileId": "={{ $json.message.photo[$json.message.photo.length-1].file_id }}",
         "additionalFields": {}
       },
-      "id": "75647433-717c-43b2-b002-9794c5382b41",
+      "id": "f2574d85-e3ed-458c-a2ad-bb94f3f356ea",
       "name": "Download Photo File",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
@@ -97,7 +97,7 @@
       "webhookId": "download-photo-webhook",
       "credentials": {
         "telegramApi": {
-          "id": "UthmehRb2RYD3B0G",
+          "id": "PSckvakDT1ETlbAn",
           "name": "Telegram account"
         }
       }
@@ -124,7 +124,7 @@
         },
         "options": {}
       },
-      "id": "a6437732-0191-4630-a247-17a4849c6329",
+      "id": "80cf5943-b68e-4bc5-91ff-25a8732cf3d4",
       "name": "Set Payload - Text",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
@@ -155,7 +155,7 @@
         },
         "options": {}
       },
-      "id": "33c919a7-f311-4414-93e0-cc6881bf2772",
+      "id": "ce10e345-a4de-4436-b41c-5b4360ab6c2f",
       "name": "Set Payload - Voice",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
@@ -186,7 +186,7 @@
         },
         "options": {}
       },
-      "id": "9a8853fc-e2e4-4e9a-960f-05c3716938bb",
+      "id": "bdf080e9-b8d8-4f2d-b190-6d80deea20b8",
       "name": "Set Payload - Photo",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
@@ -201,7 +201,7 @@
         "text": "={{ $json.output }}",
         "additionalFields": {}
       },
-      "id": "229918bf-2502-4923-826b-c2e1896bf97f",
+      "id": "e1dc55bc-1555-46ea-8e26-432b28bdb263",
       "name": "Send Response",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
@@ -212,7 +212,7 @@
       "webhookId": "e0cf3bdc-9619-42dc-9d91-8f7ff3a04baf",
       "credentials": {
         "telegramApi": {
-          "id": "UthmehRb2RYD3B0G",
+          "id": "PSckvakDT1ETlbAn",
           "name": "Telegram account"
         }
       }
@@ -306,7 +306,7 @@
         160,
         240
       ],
-      "id": "8c11757c-2e81-4fa6-bfa4-937819ebb764",
+      "id": "5c0cd318-bee4-4248-b6de-8d327a19c72d",
       "name": "Switch1"
     },
     {
@@ -349,7 +349,7 @@
         528,
         256
       ],
-      "id": "18435d66-1ece-4bcd-8d08-f8ce2705d59f",
+      "id": "da21cbf8-1f07-461f-9ff9-261dc626cbfc",
       "name": "HTTP Request"
     },
     {
@@ -362,17 +362,17 @@
         688,
         256
       ],
-      "id": "4b6307a5-18c3-4b60-8ff1-6d752112ae29",
+      "id": "c9a29b86-4302-430a-8ed6-cb8f3439acd9",
       "name": "Code in JavaScript"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "Pr8tBQtDrnB53GW4",
+          "value": "n8vybH7rinsU35jL",
           "mode": "list",
-          "cachedResultUrl": "/workflow/Pr8tBQtDrnB53GW4",
-          "cachedResultName": "test-YNAB-API-TOOLS"
+          "cachedResultUrl": "/workflow/n8vybH7rinsU35jL",
+          "cachedResultName": "YNAB-API-TOOLS"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -425,8 +425,8 @@
         1152,
         272
       ],
-      "id": "ed4009fa-d8cc-4d8b-be1c-680f02b507c5",
-      "name": "Call 'test-YNAB-API-TOOLS'"
+      "id": "f0605b36-55dc-49ac-bce4-fc07339a8ce3",
+      "name": "Call 'YNAB-API-TOOLS'"
     }
   ],
   "pinData": {},
@@ -479,7 +479,7 @@
       "main": [
         [
           {
-            "node": "Call 'test-YNAB-API-TOOLS'",
+            "node": "Call 'YNAB-API-TOOLS'",
             "type": "main",
             "index": 0
           }
@@ -490,7 +490,7 @@
       "main": [
         [
           {
-            "node": "Call 'test-YNAB-API-TOOLS'",
+            "node": "Call 'YNAB-API-TOOLS'",
             "type": "main",
             "index": 0
           }
@@ -501,7 +501,7 @@
       "main": [
         [
           {
-            "node": "Call 'test-YNAB-API-TOOLS'",
+            "node": "Call 'YNAB-API-TOOLS'",
             "type": "main",
             "index": 0
           }
@@ -555,7 +555,7 @@
         ]
       ]
     },
-    "Call 'test-YNAB-API-TOOLS'": {
+    "Call 'YNAB-API-TOOLS'": {
       "main": [
         [
           {
@@ -571,10 +571,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "6c120f30-67c1-4f43-8ebe-317030fd2d3b",
+  "versionId": "9dc83419-8dc4-4b4e-bd2c-6b2ceec59ca3",
   "meta": {
-    "instanceId": "034c0cf13df720043486907f85a898e45a2fee6a4a7bbbfdab5ea439e9c066c1"
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c10011bdd228194b706fe7dc79bf0378bdf65673c997c057b28b7438d3c9c58e"
   },
-  "id": "pLF53wHT4yFfr7QL",
+  "id": "aAMzIryvdfkjqj9U",
   "tags": []
 }

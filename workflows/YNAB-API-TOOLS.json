@@ -6,12 +6,12 @@
         "content": "# YNAB API Agent\n\nThis workflow exposes function-style actions for the main bot:\n\n- create_transaction\n- get_accounts\n- get_categories\n- get_payees\n- get_transactions\n- get_account_balance\n\nAUTH: Uses OAuth2 credential named `YNAB_Automation_bot`.\nBUDGET: Uses environment variable `YNAB_BUDGET_ID`.\n",
         "height": 576
       },
-      "id": "ef5fc855-8b36-469c-bdc1-32bb90a63e1a",
+      "id": "0ec32d67-f809-4666-9128-eede2910c3c3",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -192,
-        -112
+        -960,
+        32
       ],
       "name": "Sticky Note"
     },
@@ -23,10 +23,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        224,
-        64
+        -544,
+        208
       ],
-      "id": "c654a6a5-e57a-48b2-921c-9ac190f7be99",
+      "id": "7c47ac29-82c0-4aa8-9796-39ee7e88b8ff",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -41,10 +41,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        432,
-        64
+        -336,
+        208
       ],
-      "id": "26708c3c-0f5c-431e-a607-910c3edfdd9c",
+      "id": "d6406e8c-bffc-4099-b247-a02e89c6a7a5",
       "name": "AI Agent",
       "onError": "continueErrorOutput"
     },
@@ -58,14 +58,14 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        384,
-        272
+        -384,
+        416
       ],
-      "id": "bf81e351-4c5d-414e-8d29-7d0affbe6f5e",
+      "id": "6a548513-27df-4551-b66e-03defa4e417b",
       "name": "OpenRouter LLM",
       "credentials": {
         "openRouterApi": {
-          "id": "ZbUjKTKdNVqTClQ6",
+          "id": "zgY4sFSQCLANvjbv",
           "name": "OpenRouter account"
         }
       }
@@ -78,10 +78,10 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        528,
-        272
+        -240,
+        416
       ],
-      "id": "d75e9a86-0dea-4b86-acbf-5044c44d0789",
+      "id": "ad83fa24-25bf-41a2-8e57-86e80104f50e",
       "name": "Simple Memory"
     },
     {
@@ -91,10 +91,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        896,
-        -144
+        128,
+        0
       ],
-      "id": "f96e32a6-2619-4f75-8296-abfaa992e2a2",
+      "id": "c19e8162-9f85-4fc3-a633-7a7f3790929c",
       "name": "Format Response"
     },
     {
@@ -116,10 +116,10 @@
       "type": "n8n-nodes-base.evaluation",
       "typeVersion": 4.8,
       "position": [
-        1056,
-        -144
+        288,
+        0
       ],
-      "id": "40f262d1-e4a7-42cc-b027-e60fa6f253f3",
+      "id": "84753141-60be-4150-a812-bfcdf8dfcdda",
       "name": "Response back"
     },
     {
@@ -141,26 +141,26 @@
       "type": "n8n-nodes-base.evaluation",
       "typeVersion": 4.8,
       "position": [
-        848,
-        224
+        80,
+        368
       ],
-      "id": "438e4d1f-e713-45c7-b4be-0d9a17169657",
+      "id": "bf738aa9-3f17-4911-b0d4-8d1498415230",
       "name": "Response back (with error)"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "lZn1WWLBWwSDxc05",
+          "value": "LsglutbwFdCBFJbU",
           "mode": "list",
-          "cachedResultUrl": "/workflow/lZn1WWLBWwSDxc05",
+          "cachedResultUrl": "/workflow/LsglutbwFdCBFJbU",
           "cachedResultName": "test-YNAB-API"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "request": "={{ $fromAI('request') }}",
-            "rawPayload": "={{ $fromAI('rawPayload') }}"
+            "request": "={{$fromAI('request')}}",
+            "rawPayload": "={{$fromAI('rawPayload')}}"
           },
           "matchingColumns": [],
           "schema": [
@@ -171,8 +171,7 @@
               "defaultMatch": false,
               "display": true,
               "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
+              "type": "string"
             },
             {
               "id": "rawPayload",
@@ -180,8 +179,7 @@
               "required": false,
               "defaultMatch": false,
               "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
+              "canBeUsedToMatch": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -191,10 +189,10 @@
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
       "typeVersion": 2.2,
       "position": [
-        688,
-        288
+        -80,
+        432
       ],
-      "id": "8caf010a-f148-433d-a08f-ee308b9cc72a",
+      "id": "04f655a6-e593-4095-9d1a-21af8f7de4e8",
       "name": "Call 'test-YNAB-API'"
     },
     {
@@ -220,10 +218,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        768,
-        -144
+        0,
+        0
       ],
-      "id": "d74b35c8-ecec-4f84-8f3e-8ba0e6f5a886",
+      "id": "29b61b7a-60d6-4027-a4c1-b4f206180721",
       "name": "Edit Fields"
     }
   ],
@@ -318,10 +316,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8bed5011-367b-41c2-90c4-f607284d3b3d",
+  "versionId": "142f0f37-3b8e-4d1b-8b53-b29af1b4a26e",
   "meta": {
-    "instanceId": "034c0cf13df720043486907f85a898e45a2fee6a4a7bbbfdab5ea439e9c066c1"
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c10011bdd228194b706fe7dc79bf0378bdf65673c997c057b28b7438d3c9c58e"
   },
-  "id": "Pr8tBQtDrnB53GW4",
+  "id": "n8vybH7rinsU35jL",
   "tags": []
 }
