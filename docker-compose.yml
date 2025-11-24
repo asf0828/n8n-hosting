@@ -29,6 +29,7 @@ services:
       DB_POSTGRESDB_USER: ${POSTGRES_USER}
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
       YNAB_BUDGET_ID: ${YNAB_BUDGET_ID}
+    entrypoint: ["/docker-entrypoint-conditional.sh"]
     depends_on:
       postgres:
         condition: service_healthy
