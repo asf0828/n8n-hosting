@@ -33,8 +33,11 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./data/n8n:/home/node/.n8n
+      - n8n_data:/home/node/.n8n
       - ./n8n-entrypoint.sh:/docker-entrypoint-conditional.sh:ro
 
 volumes:
   postgres_data:
+    name: n8n-hosting_postgres_data
+  n8n_data:
+    name: n8n-hosting_n8n_data

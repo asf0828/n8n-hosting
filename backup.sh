@@ -1,17 +1,20 @@
 #!/bin/bash
+
 set -e
 
-TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-BACKUP_DIR="./backups/$TIMESTAMP"
+BACKUP_DIR="backups/$(date +%Y-%m-%d_%H-%M-%S)"
 mkdir -p "$BACKUP_DIR"
 
-echo "== Backup of Postgres =="
+echo "== Backing up Postgres volume =="
 docker run --rm \
-  -v postgres_data:/data \
-  -v $(pwd)/"$BACKUP_DIR":/backup \
-  alpine tar czf /backup/postgres_data.tar.gz -C /data .
+  -v n8n-hosting_postgres_data:/volume \
+  -v "$PWD/$BACKUP_DIR:/backup" \
+  alpine sh -c "cd /volume && tar czf /backup/postgres_data.tar.gz ."
 
-echo "== Backup of n8n =="
-tar czf "$BACKUP_DIR/n8n_data.tar.gz" ./data/n8n
+echo "== Backing up n8n data volume =="
+docker run --rm \
+  -v n8n-hosting_n8n_data:/volume \
+  -v "$PWD/$BACKUP_DIR:/backup" \
+  alpine sh -c "cd /volume && tar czf /backup/n8n_data.tar.gz ."
 
-echo "Backup completed in $BACKUP_DIR"
+echo "Backup created in: $BACKUP_DIR"

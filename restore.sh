@@ -1,49 +1,32 @@
 #!/bin/bash
-set -e
 
-if [ -z "$1" ]; then
-  echo "Usage: ./restore.sh <backup_directory>"
-  echo "Example: ./restore.sh backups/2025-01-20_10-22-11"
-  exit 1
-fi
+set -e
 
 BACKUP_DIR="$1"
 
-if [ ! -d "$BACKUP_DIR" ]; then
-  echo "ERROR: Backup directory $BACKUP_DIR does not exist."
-  exit 1
-fi
-
-POSTGRES_BACKUP="$BACKUP_DIR/postgres_data.tar.gz"
-N8N_BACKUP="$BACKUP_DIR/n8n_data.tar.gz"
-
-if [ ! -f "$POSTGRES_BACKUP" ] || [ ! -f "$N8N_BACKUP" ]; then
-  echo "ERROR: Backup directory $BACKUP_DIR does not contain the files postgres_data.tar.gz and n8n_data.tar.gz"
+if [ -z "$BACKUP_DIR" ]; then
+  echo "Usage: ./restore.sh <backup-folder>"
   exit 1
 fi
 
 echo "== Stopping containers =="
-docker compose down || true
+docker compose down
 
-echo "== Restoring Postgres volume =="
+echo "== Restoring Postgres data =="
+docker volume create n8n-hosting_postgres_data >/dev/null
 
-# Create volume if it doesn't exist
-docker volume create postgres_data >/dev/null 2>&1 || true
-
-# Empty volume and restore with Alpine
 docker run --rm \
-  -v postgres_data:/data \
-  -v $(pwd)/"$BACKUP_DIR":/backup \
-  alpine sh -c "
-    rm -rf /data/* &&
-    tar xzf /backup/postgres_data.tar.gz -C /data
-  "
+  -v n8n-hosting_postgres_data:/volume \
+  -v "$PWD/$BACKUP_DIR:/backup" \
+  alpine sh -c "rm -rf /volume/* && tar xzf /backup/postgres_data.tar.gz -C /volume"
 
 echo "== Restoring n8n data =="
-mkdir -p ./data/n8n
-rm -rf ./data/n8n/*
+docker volume create n8n-hosting_n8n_data >/dev/null
 
-tar xzf "$N8N_BACKUP" -C ./data/n8n
+docker run --rm \
+  -v n8n-hosting_n8n_data:/volume \
+  -v "$PWD/$BACKUP_DIR:/backup" \
+  alpine sh -c "rm -rf /volume/* && tar xzf /backup/n8n_data.tar.gz -C /volume"
 
 echo "== Starting containers =="
 docker compose up -d
