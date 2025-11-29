@@ -1,5 +1,5 @@
 {
-  "name": "test-YNAB-API",
+  "name": "YNAB_API",
   "nodes": [
     {
       "parameters": {
@@ -14,8 +14,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [
-        -608,
-        688
+        -448,
+        704
       ],
       "credentials": {
         "httpBearerAuth": {
@@ -33,8 +33,8 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        -368,
-        688
+        -272,
+        704
       ]
     },
     {
@@ -170,7 +170,7 @@
       "typeVersion": 3,
       "position": [
         -608,
-        16
+        0
       ]
     },
     {
@@ -189,7 +189,7 @@
       "typeVersion": 2,
       "position": [
         -368,
-        16
+        0
       ],
       "credentials": {
         "httpBearerAuth": {
@@ -201,15 +201,15 @@
     },
     {
       "parameters": {
-        "functionCode": "const response = $items(\"POST /transactions\")[0].json;\nreturn [{ \n  json: { \n    success: true, \n    action: \"create_transaction\",\n    transaction_id: response?.data?.transaction?.id,\n    account_id: response?.data?.transaction?.account_id,\n    amount: response?.data?.transaction?.amount,\n    payee_name: response?.data?.transaction?.payee_name,\n    date: response?.data?.transaction?.date,\n    message: \"Transaction created successfully\"\n  } \n}];"
+        "functionCode": "const response = $items(\"POST /accounts\")[0].json;\nreturn [{ \n  json: { \n    success: true, \n    action: \"create_account\",\n    transaction_id: response?.data?.account?.id,\n    id: response?.data?.account?.id,\n    name: response?.data?.account?.name,\n    type: response?.data?.account?.type,\n    balance: response?.data?.account?.balance,\n    transfer_payee_id: response?.data?.account?.transfer_payee_id,\n    message: \"Account created successfully\"\n  } \n}];"
       },
       "id": "1d8e174b-004f-4b03-b34c-e49099c284b9",
       "name": "Return create result",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        0,
-        0
+        -48,
+        -400
       ]
     },
     {
@@ -230,6 +230,31 @@
       "parameters": {
         "rules": {
           "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c647e307-c864-40f5-ac49-ad08810b0de5",
+                    "leftValue": "={{ $json.request }}",
+                    "rightValue": "create_account",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create_account"
+            },
             {
               "conditions": {
                 "options": {
@@ -426,8 +451,8 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        640,
-        480
+        -48,
+        80
       ]
     },
     {
@@ -444,7 +469,7 @@
       "typeVersion": 2,
       "position": [
         -608,
-        848
+        880
       ],
       "credentials": {
         "httpBearerAuth": {
@@ -463,7 +488,116 @@
       "typeVersion": 1,
       "position": [
         -368,
-        848
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "body",
+              "type": "objectValue",
+              "objectValue": "={{  $fromAI('rawPayload') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6e71f139-5db2-4b00-9e84-f1b96d598cf6",
+      "name": "Build create_account payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -608,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "requestMethod": "POST",
+        "url": "=https://api.ynab.com/v1/budgets/{{ $env.YNAB_BUDGET_ID}}/accounts",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{ $json.body }}"
+      },
+      "id": "530fe58e-34c4-4616-a49c-406db0fd6aee",
+      "name": "POST /accounts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        -320
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "T2I3YKlsiPgwbhwN",
+          "name": "YNAB-BEARER-TOKEN"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "functionCode": "const errorData = $input.first().json;\n\nlet errorMessage = \"Error occurred\";\n\nif (errorData.error?.detail) {\n  errorMessage = errorData.error.detail;\n} else if (errorData.message) {\n  errorMessage = errorData.message;\n} else if (errorData.error) {\n  errorMessage = JSON.stringify(errorData.error);\n}\n\nreturn [{ \n  json: { \n    success: false, \n    error: true,\n    message: errorMessage,\n    rawError: errorData\n  } \n}];"
+      },
+      "id": "e495d038-1bd8-4ddc-bcb1-7253efc68052",
+      "name": "Return error1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const errorData = $input.first().json;\n\nlet errorMessage = \"Error occurred\";\n\nif (errorData.error?.detail) {\n  errorMessage = errorData.error.detail;\n} else if (errorData.message) {\n  errorMessage = errorData.message;\n} else if (errorData.error) {\n  errorMessage = JSON.stringify(errorData.error);\n}\n\nreturn [{ \n  json: { \n    success: false, \n    error: true,\n    message: errorMessage,\n    rawError: errorData\n  } \n}];"
+      },
+      "id": "328a89ec-1f83-4be9-a3d5-2171e7739ad7",
+      "name": "Return error2",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const response = $items(\"POST /transactions\")[0].json;\nreturn [{ \n  json: { \n    success: true, \n    action: \"create_account\",\n    transaction_id: response?.data?.transaction?.id,\n    account_id: response?.data?.transaction?.account_id,\n    amount: response?.data?.transaction?.amount,\n    payee_name: response?.data?.transaction?.payee_name,\n    date: response?.data?.transaction?.date,\n    message: \"Transaction created successfully\"\n  } \n}];"
+      },
+      "id": "619ac6d5-4b99-4ccf-a602-37dbc0f49a51",
+      "name": "Return create result1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "body",
+              "type": "objectValue",
+              "objectValue": "={{  $fromAI('rawPayload') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "967c9456-1044-449a-9663-4dd7f92bb772",
+      "name": "Build get_account_balance payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -624,
+        704
       ]
     }
   ],
@@ -484,7 +618,7 @@
       "main": [
         [
           {
-            "node": "Return create result",
+            "node": "Return create result1",
             "type": "main",
             "index": 0
           }
@@ -568,6 +702,13 @@
       "main": [
         [
           {
+            "node": "Build create_account payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Build create_transaction payload",
             "type": "main",
             "index": 0
@@ -596,7 +737,7 @@
         ],
         [
           {
-            "node": "GET /accounts/{id}",
+            "node": "Build get_account_balance payload",
             "type": "main",
             "index": 0
           }
@@ -610,7 +751,47 @@
         ],
         [
           {
-            "node": "Return error",
+            "node": "Return error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build create_account payload": {
+      "main": [
+        [
+          {
+            "node": "POST /accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /accounts": {
+      "main": [
+        [
+          {
+            "node": "Return create result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return error2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build get_account_balance payload": {
+      "main": [
+        [
+          {
+            "node": "GET /accounts/{id}",
             "type": "main",
             "index": 0
           }
@@ -622,7 +803,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "0f62d3cb-3f56-4d0d-b403-f94c42dd14ba",
+  "versionId": "c3dab345-2b89-432d-a864-60f02523c431",
   "meta": {
     "instanceId": "c10011bdd228194b706fe7dc79bf0378bdf65673c997c057b28b7438d3c9c58e"
   },

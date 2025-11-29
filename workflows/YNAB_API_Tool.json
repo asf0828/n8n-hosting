@@ -1,5 +1,5 @@
 {
-  "name": "YNAB-API-TOOLS",
+  "name": "YNAB_API_Tool",
   "nodes": [
     {
       "parameters": {
@@ -34,8 +34,8 @@
         "promptType": "define",
         "text": "={{ $json.text}}",
         "options": {
-          "systemMessage": "# YNAB API AGENT - SYSTEM PROMPT\n\n## ROLE\nYou are an AI agent that controls a tool called **\"Call 'YNAB-API'\"**.\n\n**RULES:**\n- Always call the tool to perform actions\n- After the tool returns data, you MUST respond with a brief confirmation\n- Do not fabricate data\n\n---\n\n## OPERATIONS\n\n1. **Query Operations**\n   - `get_accounts` - Retrieve all budget accounts\n   - `get_categories` - Retrieve all budget categories  \n   - `get_payees` - Retrieve all payees/merchants\n   - `get_transactions` - Retrieve transactions\n   - `get_account_balance` - Get balance for specific account\n\n2. **Transaction Operations**\n   - `create_transaction` - Create a new transaction\n\n---\n\n## WORKFLOW\n\n### For Queries (get_accounts, get_categories, etc.)\n\n1. Call the tool with the request type\n2. When tool returns success, respond with: \"Done\"\n\n**Example:**\nUser: \"Muéstrame mis cuentas\"\n\nYou call:\n```json\n{\"request\": \"get_accounts\", \"rawPayload\": null}\n```\n\nTool returns: {success: true, accounts: [...]}\n\nYou respond: {success: true, accounts: [...]}\n\n---\n\n### For Transaction Creation\n\n1. Extract: amount, merchant, date, account hint, category hint\n2. Call `get_accounts` to resolve account ID\n3. Match account hint to actual account name (case-insensitive)\n4. Call `create_transaction` with resolved account_id\n5. When tool returns success, respond with: \"Done\"\n\n**Amount Conversion:** Always convert to milliunits (multiply by 1000)\n- $50 → 50000\n- $25.50 → 25500\n\n**Example:**\nUser: \"Pagué $5.500 en café con mi Nu\"\n\nCall 1:\n```json\n{\"request\": \"get_accounts\", \"rawPayload\": null}\n```\n\nTool returns: {success: true, accounts: [{id: \"abc-123\", name: \"Nubank\"}, ...]}\n\nCall 2:\n```json\n{\n  \"request\": \"create_transaction\",\n  \"rawPayload\": {\n    \"transaction\": {\n      \"account_id\": \"abc-123\",\n      \"date\": \"2025-11-18\",\n      \"amount\": 5500,\n      \"payee_name\": \"Café\",\n      \"cleared\": \"cleared\",\n      \"approved\": true\n    }\n  }\n}\n```\n\nTool returns: {success: true, transaction_id: \"xyz\"}\n\nYou respond: {success: true, transaction_id: \"xyz\"}\n\n---\n\n## MATCHING RULES\n\n- \"nu\" matches \"Nubank\", \"NuCard\"  \n- \"rappi\" matches \"Rappipay\", \"RappiCard\"\n- \"bancolombia\" matches any account with \"Bancolombia\"\n- \"efectivo\" or \"cash\" matches \"Cash\"\n\n---\n\n## CRITICAL\n\n- Never invent UUIDs\n- Always call get_accounts before create_transaction\n- After tool returns success, just say \"Done\"\n- Maximum 3 tool calls per request",
-          "maxIterations": 3
+          "systemMessage": "# YNAB API AGENT - SYSTEM PROMPT\n\n## ROLE\nYou are an AI agent that controls a tool called **\"Call 'YNAB-API'\"**.\n\n**RULES:**\n- Always call the tool to perform actions\n- After the tool returns data, you MUST respond with a brief confirmation\n- Do not fabricate data\n\n---\n\n## OPERATIONS\n\n1. **Query Operations**\n   - `get_accounts` - Retrieve all budget accounts\n   - `get_categories` - Retrieve all budget categories  \n   - `get_payees` - Retrieve all payees/merchants\n   - `get_transactions` - Retrieve transactions\n   - `get_account_balance` - Get balance for specific account\n\n2. **Transaction Operations**\n   - `create_account` - Create a new account\n   - `create_transaction` - Create a new transaction\n\n---\n\n## WORKFLOW\n\n### For Queries (get_accounts, get_categories, etc.)\n\n1. Call the tool with the request type\n2. When tool returns success, respond with: \"Done\"\n\n**Example:**\nUser: \"Muéstrame mis cuentas\"\n\nYou call:\n```json\n{\"request\": \"get_accounts\", \"rawPayload\": null}\n```\n\nTool returns: {success: true, accounts: [...]}\n\nYou respond: {success: true, accounts: [...]}\n\n---\n\n### For Account Creation\n\n1. Extract: account name, type and initial balance\n2. Call `create_account` with account name\n3. When tool returns success, respond with: \"Done\"\n\n### For Transaction Creation\n\n1. Extract: amount, merchant, date, account hint, category hint\n2. Call `get_accounts` to resolve account ID\n3. Match account hint to actual account name (case-insensitive)\n4. Call `create_transaction` with resolved account_id\n5. When tool returns success, respond with: \"Done\"\n\n### For Transfer Transaction Creation\n\n1. Extract: amount, from account, to account, date, category hint\n2. Call `get_accounts` to resolve account IDs\n3. Match account hint to actual account name (case-insensitive)\n4. Call `create_transaction` with resolved account_ids\n\n**Examples:**\n\n### For Account Creation\nUser: \"Crea una cuenta de ahorros con nombre Bold CF y $10.000 de balance inicial\"\n\nCall 2:\n```json\n{\n    \"request\": \"create_account\",\n    \"rawPayload\": {\n        {\n            \"account\": {\n                \"name\": \"Bold CF\",\n                \"type\": \"savings\",\n                \"balance\": 10000\n            }\n        }\n    }\n  \n}\n```\n\nTool returns: {success: true, account_id: \"abc-123\"}\n\nYou respond: {success: true, account_id: \"abc-123\"}\n\n### For Transaction Creation\nUser: \"Pagué $5.500 en café con mi Nu\"\n\nCall 1:\n```json\n{\"request\": \"get_accounts\", \"rawPayload\": null}\n```\n\nTool returns: {success: true, accounts: [{id: \"abc-123\", name: \"Nubank\"}, ...]}\n\nCall 2:\n```json\n{\n  \"request\": \"create_transaction\",\n  \"rawPayload\": {\n    \"transaction\": {\n      \"account_id\": \"abc-123\",\n      \"date\": \"2025-11-18\",\n      \"amount\": 5500,\n      \"payee_name\": \"Café\",\n      \"cleared\": \"cleared\",\n      \"approved\": true\n    }\n  }\n}\n```\n\nTool returns: {success: true, transaction_id: \"xyz\"}\n\nYou respond: {success: true, transaction_id: \"xyz\"}\n\n### For Transfer Transaction Creation\nUser: \"Tranfiere $5.500 de mi Nubank a mi Rappi\"\n\nCall 1:\n```json\n{\"request\": \"get_accounts\", \"rawPayload\": null}\n```\n\nTool returns: {success: true, accounts: [{\n        \"id\": \"abc-123\",\n        \"name\": \"Nubank\",\n        \"type\": \"savings\",\n        \"on_budget\": true,\n        \"closed\": false,\n        ...\n      }, {\n        \"id\": \"def-456\",\n        \"name\": \"Rappicuenta\",\n        \"type\": \"mortgage\",\n        \"on_budget\": false,\n        \"closed\": false,\n        ...,\n      }, ...]}\n\n\nCall 2:\n```json\n{\"request\": \"get_payees\", \"rawPayload\": null}\n```\n\nTool returns: {success: true, payees: [{\n        \"id\": \"rst-654\",\n        \"name\": \"Transfer : Rappipay\",\n        \"transfer_account_id\": \"abc-123\",\n        \"deleted\": false\n      },, ...]}\n```json\n\nCall 3:\n```json\n{\n    \"request\": \"create_transaction\",\n    \"rawPayload\": {\n        {\n            \"transfer\": {\n                \"account_id\": \"abc-123\",\n                \"date\": \"2025-11-18\",\n                \"amount\": 5500,\n                \"payee_id\": \"rst-654\",\n                \"approved\": true\n            }\n        }\n   }\n}\n```\n\nTool returns: {success: true, transaction_id: \"xyz\"}\n\nYou respond: {success: true, transaction_id: \"xyz\"}\n\n\n## MATCHING RULES\n\n- \"nu\" matches \"Nubank\", \"NuCard\"  \n- \"rappi\" matches \"Rappipay\", \"RappiCard\"\n- \"bancolombia\" matches any account with \"Bancolombia\"\n- \"efectivo\" or \"cash\" matches \"Cash\"\n\n---\n\n## CRITICAL\n\n- Never invent UUIDs\n- Always call get_accounts before create_transaction\n- Maximum 3 tool calls per request",
+          "maxIterations": 10
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -50,7 +50,7 @@
     },
     {
       "parameters": {
-        "model": "x-ai/grok-4.1-fast:free",
+        "model": "openai/gpt-oss-20b:free",
         "options": {
           "temperature": 0.1
         }
@@ -86,19 +86,6 @@
     },
     {
       "parameters": {
-        "jsCode": "// ------------------------------------------------------------\n// 1. Obtener la salida del agente\n// ------------------------------------------------------------\nconst rawOutput = $json.output || $json.toolResponse || $json.text || null;\n\nlet toolData = null;\n\n// ------------------------------------------------------------\n// 2. Intentar parsear directamente lo que venga\n// ------------------------------------------------------------\nif (rawOutput && typeof rawOutput === \"string\") {\n  try {\n    const parsed = JSON.parse(rawOutput);\n\n    // Es una respuesta válida del YNAB-API si contiene success\n    if (parsed && typeof parsed === \"object\" && parsed.success !== undefined) {\n      toolData = parsed;\n    }\n  } catch (_) {\n    // No es JSON\n  }\n}\n\n// ------------------------------------------------------------\n// 3. Si aún no hay toolData → error real\n// ------------------------------------------------------------\nif (!toolData) {\n  return [{\n    json: {\n      output:\n        \"❌ Error leyendo la respuesta del servidor.\\n\" +\n        \"El agente no devolvió JSON válido.\\n\\n\" +\n        \"Debug (100 chars): \" +\n        (rawOutput ? JSON.stringify(rawOutput).substring(0, 100) : \"sin output\")\n    }\n  }];\n}\n\n// ------------------------------------------------------------\n// 4. Formatear respuesta final según acción YNAB\n// ------------------------------------------------------------\nlet output = \"\";\n\nswitch (toolData.action) {\n\n  case \"create_transaction\":\n    output = `✅ Transacción creada exitosamente!\\n`;\n    if (toolData.transaction_id) output += `ID: ${toolData.transaction_id}\\n`;\n    if (toolData.amount) output += `Monto: $${(toolData.amount / 1000).toLocaleString('es-CO')}\\n`;\n    if (toolData.payee_name) output += `Comercio: ${toolData.payee_name}\\n`;\n    if (toolData.date) output += `Fecha: ${toolData.date}`;\n    break;\n\n  case \"get_accounts\":\n    output = `📊 Cuentas encontradas (${toolData.count}):\\n\\n`;\n    toolData.accounts.forEach(acc => {\n      const balance = (acc.balance / 1000).toLocaleString('es-CO');\n      output += `• ${acc.name}: $${balance}\\n`;\n    });\n    break;\n\n  case \"get_categories\":\n    output = `📁 Categorías (${toolData.count} grupos):\\n`;\n    toolData.categories.forEach(group => {\n      output += `\\n**${group.name}**\\n`;\n      group.categories?.forEach(cat => {\n        if (!cat.hidden) output += `  • ${cat.name}\\n`;\n      });\n    });\n    break;\n\n  case \"get_transactions\":\n    output = `💳 Últimas transacciones (${toolData.count}):\\n\\n`;\n    toolData.transactions.slice(0, 10).forEach(txn => {\n      const amount = (txn.amount / 1000).toLocaleString('es-CO');\n      output += `• ${txn.date} - ${txn.payee_name || 'N/A'}: $${amount}\\n`;\n    });\n    break;\n\n  case \"get_payees\":\n    output = `🏪 Comercios (${toolData.count}):\\n\\n`;\n    toolData.payees.slice(0, 20).forEach(p => output += `• ${p.name}\\n`);\n    if (toolData.count > 20) {\n      output += `\\n... y ${toolData.count - 20} más`;\n    }\n    break;\n\n  case \"get_account_balance\":\n    const bal = (toolData.balance / 1000).toLocaleString('es-CO');\n    output = `💰 Balance de ${toolData.account.name}:\\n$${bal}`;\n    break;\n\n  default:\n    output = toolData.message || \"Operación completada.\";\n}\n\n// ------------------------------------------------------------\n// 5. Retornar al usuario\n// ------------------------------------------------------------\nreturn [{ json: { output } }];\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        128,
-        0
-      ],
-      "id": "c19e8162-9f85-4fc3-a633-7a7f3790929c",
-      "name": "Format Response"
-    },
-    {
-      "parameters": {
         "dataTableId": {
           "__rl": true,
           "value": "={{$json.id}}",
@@ -116,7 +103,7 @@
       "type": "n8n-nodes-base.evaluation",
       "typeVersion": 4.8,
       "position": [
-        288,
+        320,
         0
       ],
       "id": "84753141-60be-4150-a812-bfcdf8dfcdda",
@@ -222,7 +209,20 @@
         0
       ],
       "id": "29b61b7a-60d6-4027-a4c1-b4f206180721",
-      "name": "Edit Fields"
+      "name": "Format AI Agent Output"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ------------------------------------------------------------\n// 1. Obtener la salida del agente\n// ------------------------------------------------------------\nconst rawOutput = $json.output || $json.toolResponse || $json.text || null;\n\nlet toolData = null;\n\n// ------------------------------------------------------------\n// 2. Intentar parsear directamente lo que venga\n// ------------------------------------------------------------\nif (rawOutput && typeof rawOutput === \"string\") {\n  try {\n    const parsed = JSON.parse(rawOutput);\n\n    // Es una respuesta válida del YNAB-API si contiene success\n    if (parsed && typeof parsed === \"object\" && parsed.success !== undefined) {\n      toolData = parsed;\n    }\n  } catch (_) {\n    // No es JSON\n  }\n}\n\n// ------------------------------------------------------------\n// 3. Si aún no hay toolData → error real\n// ------------------------------------------------------------\nif (!toolData) {\n  return [{\n    json: {\n      output:\n        \"❌ Error leyendo la respuesta del servidor.\\n\" +\n        \"El agente no devolvió JSON válido.\\n\\n\" +\n        \"Debug (100 chars): \" +\n        (rawOutput ? JSON.stringify(rawOutput).substring(0, 100) : \"sin output\")\n    }\n  }];\n}\n\n// ------------------------------------------------------------\n// 4. Formatear respuesta final según acción YNAB\n// ------------------------------------------------------------\nlet output = \"\";\n\nswitch (toolData.action) {\n\n  case \"create_transaction\":\n    output = `✅ Transacción creada exitosamente!\\n`;\n    if (toolData.transaction_id) output += `ID: ${toolData.transaction_id}\\n`;\n    if (toolData.amount) output += `Monto: $${(toolData.amount / 1000).toLocaleString('es-CO')}\\n`;\n    if (toolData.payee_name) output += `Comercio: ${toolData.payee_name}\\n`;\n    if (toolData.date) output += `Fecha: ${toolData.date}`;\n    break;\n\n  case \"get_accounts\":\n    output = `📊 Cuentas encontradas (${toolData.count}):\\n\\n`;\n    toolData.accounts.forEach(acc => {\n      const balance = (acc.balance / 1000).toLocaleString('es-CO');\n      output += `• ${acc.name}: $${balance}\\n`;\n    });\n    break;\n\n  case \"get_categories\":\n    output = `📁 Categorías (${toolData.count} grupos):\\n`;\n    toolData.categories.forEach(group => {\n      output += `\\n**${group.name}**\\n`;\n      group.categories?.forEach(cat => {\n        if (!cat.hidden) output += `  • ${cat.name}\\n`;\n      });\n    });\n    break;\n\n  case \"get_transactions\":\n    output = `💳 Últimas transacciones (${toolData.count}):\\n\\n`;\n    toolData.transactions.slice(0, 10).forEach(txn => {\n      const amount = (txn.amount / 1000).toLocaleString('es-CO');\n      output += `• ${txn.date} - ${txn.payee_name || 'N/A'}: $${amount}\\n`;\n    });\n    break;\n\n  case \"get_payees\":\n    output = `🏪 Comercios (${toolData.count}):\\n\\n`;\n    toolData.payees.slice(0, 20).forEach(p => output += `• ${p.name}\\n`);\n    if (toolData.count > 20) {\n      output += `\\n... y ${toolData.count - 20} más`;\n    }\n    break;\n\n  case \"get_account_balance\":\n    const bal = (toolData.balance / 1000).toLocaleString('es-CO');\n    output = `💰 Balance de ${toolData.account.name}:\\n$${bal}`;\n    break;\n\n  default:\n    output = toolData.message || \"Operación completada.\";\n}\n\n// ------------------------------------------------------------\n// 5. Retornar al usuario\n// ------------------------------------------------------------\nreturn [{ json: { output } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        0
+      ],
+      "id": "c19e8162-9f85-4fc3-a633-7a7f3790929c",
+      "name": "Mapping Response"
     }
   ],
   "pinData": {},
@@ -253,7 +253,7 @@
       "main": [
         [
           {
-            "node": "Edit Fields",
+            "node": "Format AI Agent Output",
             "type": "main",
             "index": 0
           }
@@ -278,17 +278,6 @@
         ]
       ]
     },
-    "Format Response": {
-      "main": [
-        [
-          {
-            "node": "Response back",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Call 'test-YNAB-API'": {
       "ai_tool": [
         [
@@ -300,11 +289,22 @@
         ]
       ]
     },
-    "Edit Fields": {
+    "Format AI Agent Output": {
       "main": [
         [
           {
-            "node": "Format Response",
+            "node": "Mapping Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapping Response": {
+      "main": [
+        [
+          {
+            "node": "Response back",
             "type": "main",
             "index": 0
           }
@@ -316,7 +316,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "142f0f37-3b8e-4d1b-8b53-b29af1b4a26e",
+  "versionId": "4a488185-1acb-416e-b461-0b905fd18ad5",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c10011bdd228194b706fe7dc79bf0378bdf65673c997c057b28b7438d3c9c58e"

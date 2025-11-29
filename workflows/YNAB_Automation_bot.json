@@ -1,5 +1,5 @@
 {
-  "name": "test-YNAB_Automation_bot",
+  "name": "YNAB_Automation_bot",
   "nodes": [
     {
       "parameters": {
@@ -48,8 +48,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        368,
-        48
+        400,
+        32
       ],
       "webhookId": "download-voice-webhook",
       "credentials": {
@@ -71,7 +71,7 @@
       "typeVersion": 1.6,
       "position": [
         544,
-        48
+        32
       ],
       "credentials": {
         "openAiApi": {
@@ -129,7 +129,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        528,
+        544,
         512
       ]
     },
@@ -160,8 +160,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [
-        704,
-        48
+        688,
+        32
       ]
     },
     {
@@ -216,98 +216,6 @@
           "name": "Telegram account"
         }
       }
-    },
-    {
-      "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.message.voice.file_id }}",
-                    "rightValue": "",
-                    "operator": {
-                      "type": "object",
-                      "operation": "exists",
-                      "singleValue": true
-                    },
-                    "id": "60543b45-1284-4ec0-a44a-9373a2af31a5"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Voice"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "id": "70a78dd0-e12a-4658-b538-3b646f668e96",
-                    "leftValue": "={{ $json.message.photo }}",
-                    "rightValue": "",
-                    "operator": {
-                      "type": "array",
-                      "operation": "notEmpty",
-                      "singleValue": true
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Image+Text"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 2
-                },
-                "conditions": [
-                  {
-                    "id": "fe2f83d6-3195-49f0-ab88-8451de7e67bf",
-                    "leftValue": "={{ $json.message.text }}",
-                    "rightValue": "",
-                    "operator": {
-                      "type": "string",
-                      "operation": "exists",
-                      "singleValue": true
-                    }
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Text"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.3,
-      "position": [
-        160,
-        240
-      ],
-      "id": "5c0cd318-bee4-4248-b6de-8d327a19c72d",
-      "name": "Switch1"
     },
     {
       "parameters": {
@@ -427,6 +335,98 @@
       ],
       "id": "f0605b36-55dc-49ac-bce4-fc07339a8ce3",
       "name": "Call 'YNAB-API-TOOLS'"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "60543b45-1284-4ec0-a44a-9373a2af31a5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "70a78dd0-e12a-4658-b538-3b646f668e96",
+                    "leftValue": "={{ $json.message.photo }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image+Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fe2f83d6-3195-49f0-ab88-8451de7e67bf",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        160,
+        240
+      ],
+      "id": "5c0cd318-bee4-4248-b6de-8d327a19c72d",
+      "name": "Handle input type"
     }
   ],
   "pinData": {},
@@ -435,7 +435,7 @@
       "main": [
         [
           {
-            "node": "Switch1",
+            "node": "Handle input type",
             "type": "main",
             "index": 0
           }
@@ -508,31 +508,6 @@
         ]
       ]
     },
-    "Switch1": {
-      "main": [
-        [
-          {
-            "node": "Download Voice File",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Download Photo File",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Set Payload - Text",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "HTTP Request": {
       "main": [
         [
@@ -565,13 +540,38 @@
           }
         ]
       ]
+    },
+    "Handle input type": {
+      "main": [
+        [
+          {
+            "node": "Download Voice File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Photo File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Payload - Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "9dc83419-8dc4-4b4e-bd2c-6b2ceec59ca3",
+  "versionId": "8f2d2ae8-4de4-4b83-b4c0-eef0d5dd7194",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c10011bdd228194b706fe7dc79bf0378bdf65673c997c057b28b7438d3c9c58e"
